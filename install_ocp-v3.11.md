@@ -139,6 +139,15 @@ reboot
 
 ```
 
+OCP requires the following properties to be set on the ethernet interface's network script. If you have 2 eth interfaces, update both of them
+
+```shell
+vi /etc/sysconfig/network-scripts/ifcfg-eth0
+# Update or add the following properties
+# NM_CONTROLLED=yes
+# PEERDNS=yes
+```
+
 ## 5. Update Ansible hosts file
 
 Replace the hostname and DNS with your actual hostname.   
@@ -222,4 +231,32 @@ node01.<YOUR_OCP_DOMAIN.COM> openshift_node_group_name='node-config-compute'
 node02.<YOUR_OCP_DOMAIN.COM> openshift_node_group_name='node-config-compute'
 node03.<YOUR_OCP_DOMAIN.COM> openshift_node_group_name='node-config-compute'
 
+```
+
+## 6. You're now ready to install OKD/OCP
+- If you're installing OCP, follow OCP docs to enable your OCP subscription
+- If you're installing OKD (like me), `git clone` OKD ansible playbooks
+```shell
+cd /usr/share/ansible/openshift-ansible
+git clone https://github.com/openshift/openshift-ansible
+cd openshift-ansible
+git checkout release-3.11
+```
+
+- Run OCP prerequisite playbook
+```shell
+ansible-playbook -i /etc/ansible/hosts /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml
+```
+
+- Run OCP deploy playbook
+```shell
+ansible-playbook -i /etc/ansible/hosts /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml
+```
+
+- If you need to uninstall
+```shell
+ansible-playbook -i /etc/ansible/hosts /usr/share/ansible/openshift-ansible/playbooks/adhoc/uninstall.yml
+
+# make sure the following directories are also deleted in all nodes
+# rm -rf ansible .ansible* .kube/ openshift_bootstrap/ .pki/
 ```
