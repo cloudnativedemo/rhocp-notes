@@ -11,13 +11,13 @@ In my topology:
   - Compute node 02: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
   - Compnute node 03: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
 
-##1. Prepare file system  
+## 1. Prepare file system  
 
 | Node    | File system                                                                                                       | Size                                     |
 |---------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------|
-| master  | /var/lib/openshift   /var/lib/etcd   /var/lib/docker   /var/lib/origin/openshift.local.volumes   /var/lib/kubelet | 10 GB   20 GB   50 GB   Varies   5  GB   |
-| infra   | /var/lib/docker   /var/lib/kubelet                                                                                | 50 GB   5  GB                            |
-| compute | /var/lib/docker   /var/lib/kubelet                                                                                | 50 GB   5  GB                            |
+| master  | /var/lib/openshift<br/>   /var/lib/etcd<br/>   /var/lib/docker<br/>   /var/lib/origin/openshift.local.volumes<br/>   /var/lib/kubelet<br/> | 10 GB<br/>   20 GB<br/>   50 GB<br/>   Varies<br/>   5  GB<br/>   |
+| infra   | /var/lib/docker<br/>   /var/lib/kubelet<br/>                                                                                | 50 GB<br/>   5  GB<br/>                            |
+| compute | /var/lib/docker<br/>   /var/lib/kubelet<br/>                                                                                | 50 GB<br/>   5  GB<br/>                            |
 
 
 
