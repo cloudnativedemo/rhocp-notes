@@ -11,6 +11,11 @@ In my topology:
   - Compute node 02: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
   - Compnute node 03: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
 
+## 1. Firewall/Security groups configuration
+- Master node: 53/UDP, 53/TCP, 8053/TCP, 8053/UDP, 10250/TCP, 2379-2380/TCP, 8443/TCP, 4789/UDP, 8444/TCP, 8445/TCP
+- Infra node: 80/TCP, 443/TCP, 1936/TCP, 8080/TCP, + Ports from compute nodes
+- Compute node: 53/TCP, 53/UDP, 8053/TCP, 8053/UDP, 10010/TCP, 4789/UDP, 8445/TCP, 24007-24009/TCP, 10250/TCP
+
 ## 1. Prepare file system  
 
 | Node    | File system                                                                                                       | Size                                     |
@@ -82,5 +87,25 @@ tee -a /etc/fstab << EOF
 /mnt/ocp/lib/kubelet       /var/lib/kubelet        none     rbind        0 0
 EOF
 mount -a
+
+```
+
+## 2. Install prerequisite packages
+
+- Check if NetworkManager is installed, enabled and started
+- Install required yum packages
+
+```shell
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+subscription-manager repos --enable=rhel-7-server-extras-rpms
+
+yum install NetworkManager wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct -y
+
+systemctl start NetworkManager
+systemctl enable NetworkManager
+
+yum update -y
+
+reboot
 
 ```
