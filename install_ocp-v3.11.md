@@ -237,7 +237,8 @@ node03.<YOUR_OCP_DOMAIN.COM> openshift_node_group_name='node-config-compute'
 - If you're installing OCP, follow OCP docs to enable your OCP subscription
 - If you're installing OKD (like me), `git clone` OKD ansible playbooks
 ```shell
-cd /usr/share/ansible/openshift-ansible
+mkdir -p /usr/share/ansible
+cd /usr/share/ansible
 git clone https://github.com/openshift/openshift-ansible
 cd openshift-ansible
 git checkout release-3.11
