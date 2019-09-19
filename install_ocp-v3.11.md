@@ -12,11 +12,40 @@ In my topology:
   - Compnute node 03: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
 
 ## 1. Firewall/Security groups configuration
-- Master node: 53/UDP, 53/TCP, 8053/TCP, 8053/UDP, 10250/TCP, 2379-2380/TCP, 8443/TCP, 4789/UDP, 8444/TCP, 8445/TCP
+- Master node: 22/TCP, 53/UDP, 53/TCP, 8053/TCP, 8053/UDP, 10250/TCP, 2379-2380/TCP, 8443/TCP, 4789/UDP, 8444/TCP, 8445/TCP
 - Infra node: 80/TCP, 443/TCP, 1936/TCP, 8080/TCP, + Ports from compute nodes
-- Compute node: 53/TCP, 53/UDP, 8053/TCP, 8053/UDP, 10010/TCP, 4789/UDP, 8445/TCP, 24007-24009/TCP, 10250/TCP
+- Compute node: 22/TCP, 53/TCP, 53/UDP, 8053/TCP, 8053/UDP, 10010/TCP, 4789/UDP, 8445/TCP, 24007-24009/TCP, 10250/TCP
 
-## 2. Prepare file system  
+## 2. Configure SSH access and key
+
+Since I'm install OCP from my master node, I need to ensure that I can ssh to other nodes using a ssh key
+If your nodes don't allow `root` access, you must enable it
+```shell
+vi /etc/ssh/sshd_config
+
+# Set PermitRootLogin to yes
+```
+- Generate SSH keys if you don't have any
+
+```shell
+mkdir -p /root/.ssh
+sudo ssh-keygen -b 4096 -t rsa -f /root/.ssh/id_rsa -N ""
+```
+- Copy SSH public key to other node  
+```shell
+export SSH_KEY=$(cat /root/.ssh/id_rsa.pub)
+ssh root@master "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
+ssh root@infra "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
+ssh root@node01 "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
+ssh root@node02 "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
+ssh root@node03 "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
+
+tee /root/.ssh/config << EOF
+IdentityFile /root/.ssh/id_rsa
+EOF
+```
+
+## 3. Prepare file system  
 
 | Node    | File system                                                                                                       | Size                                     |
 |---------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------|
@@ -90,7 +119,7 @@ mount -a
 
 ```
 
-## 3. Install prerequisite packages
+## 4. Install prerequisite packages
 
 - Check if NetworkManager is installed, enabled and started
 - Install required yum packages
@@ -110,7 +139,7 @@ reboot
 
 ```
 
-## 4. Update Ansible hosts file
+## 5. Update Ansible hosts file
 
 Replace the hostname and DNS with your actual hostname.   
 ***Note:*** 
