@@ -11,7 +11,7 @@ In my topology:
   - Compute node 02: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
   - Compnute node 03: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
 
-##1. Prepare file system
+##1. Prepare file system  
 | Node    | File system                                                                                                       | Size                                     |
 |---------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------|
 | master  | /var/lib/openshift   /var/lib/etcd   /var/lib/docker   /var/lib/origin/openshift.local.volumes   /var/lib/kubelet | 10 GB   20 GB   50 GB   Varies   5  GB   |
