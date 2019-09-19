@@ -16,7 +16,7 @@ In my topology:
 - Infra node: 80/TCP, 443/TCP, 1936/TCP, 8080/TCP, + Ports from compute nodes
 - Compute node: 53/TCP, 53/UDP, 8053/TCP, 8053/UDP, 10010/TCP, 4789/UDP, 8445/TCP, 24007-24009/TCP, 10250/TCP
 
-## 1. Prepare file system  
+## 2. Prepare file system  
 
 | Node    | File system                                                                                                       | Size                                     |
 |---------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------|
@@ -90,7 +90,7 @@ mount -a
 
 ```
 
-## 2. Install prerequisite packages
+## 3. Install prerequisite packages
 
 - Check if NetworkManager is installed, enabled and started
 - Install required yum packages
@@ -107,5 +107,90 @@ systemctl enable NetworkManager
 yum update -y
 
 reboot
+
+```
+
+## 4. Update Ansible hosts file
+
+Replace the hostname and DNS with your actual hostname.   
+***Note:*** 
+  - The nodes' hostname must be FQDN. If they're not, you can update your nodes' hostname using `hostnamectl` 
+  - In my configuration, I use `HTPasswdPasswordIdentityProvider` as the identity provider. You can use a htpasswd generator to generate an username/password for the Openshift admin console. I found this one, it works perfectly - http://www.htaccesstools.com/htpasswd-generator/
+  - To enable glusterfs, you need an additional raw storgage device on each of the compute (worker) node, it's '/dev/xvde' in my environment
+  
+```
+vi /etc/ansible/hosts
+```
+```yaml
+#/etc/ansible/hosts
+
+[OSEv3:children]
+masters
+nodes
+etcd
+glusterfs
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+ansible_ssh_user=root
+openshift_deployment_type=origin
+
+# Set the ports to 8443
+openshift_master_api_port=8443
+openshift_master_console_port=8443
+
+# Going in as root can be another user with sudo
+#ansible_ssh_user=<RHEL_USER_IF_NOT_ROOT>
+#ansible_become=<'yes' IF_USER_IS_NOT_ROOT>
+
+# Set the debug level to 4
+debug_level=4
+
+# Skipping checks that are hit and miss
+openshift_disable_check=memory_availability,docker_image_availability,disk_availability
+
+# use RHEL firewalld
+os_firewall_use_firewalld=true
+
+# uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+openshift_master_htpasswd_users={'<YOUR_ADMIN_USERNAME_GOES_HERE>': '<YOUR_HT_PASSWORD_GOES_HERE>'}
+
+#Provide a sub-domain for apps deployed on OCP
+openshift_master_default_subdomain=apps.<YOUR_OCP_DOMAIN.COM>
+
+#Provide the FQDN of the master node
+openshift_master_cluster_hostname=master.<YOUR_OCP_DOMAIN.COM>
+
+openshift_hosted_router_selector='node-role.kubernetes.io/infra=true'
+
+#glusterfs configuration
+openshift_storage_glusterfs_namespace=app-storage
+openshift_storage_glusterfs_storageclass=true
+openshift_storage_glusterfs_storageclass_default=false
+openshift_storage_glusterfs_block_deploy=true
+openshift_storage_glusterfs_block_host_vol_size=75 # REPLACE WITH THE ACTUAL SIZE OF /dev/xvde (in GB)
+openshift_storage_glusterfs_block_storageclass=true
+openshift_storage_glusterfs_block_storageclass_default=false
+
+# host group for masters
+[masters]
+master.<YOUR_OCP_DOMAIN.COM>
+
+# host group for etcd
+[etcd]
+master.<YOUR_OCP_DOMAIN.COM>
+
+[glusterfs]
+node01.<YOUR_OCP_DOMAIN.COM> glusterfs_devices='[ "/dev/xvde" ]'
+node02.<YOUR_OCP_DOMAIN.COM> glusterfs_devices='[ "/dev/xvde" ]'
+node03.<YOUR_OCP_DOMAIN.COM> glusterfs_devices='[ "/dev/xvde" ]'
+
+[nodes]
+master.<YOUR_OCP_DOMAIN.COM> openshift_node_group_name='node-config-master'
+infra.<YOUR_OCP_DOMAIN.COM>  openshift_node_group_name='node-config-infra'
+node01.<YOUR_OCP_DOMAIN.COM> openshift_node_group_name='node-config-compute'
+node02.<YOUR_OCP_DOMAIN.COM> openshift_node_group_name='node-config-compute'
+node03.<YOUR_OCP_DOMAIN.COM> openshift_node_group_name='node-config-compute'
 
 ```
