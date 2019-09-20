@@ -5,7 +5,7 @@ This doc is showing my current experience of installing OKD on a multiple nodes 
 The install process is based on Red Hat OCP's official docs: https://docs.okd.io/latest/install/index.html
 
 In my topology:
-  - Master node: 8 CPUs x 32 GB RAM, xvdc: 200GB
+  - Master node: 8 CPUs x 32 GB RAM, xvdc: 200GB (for IBM common services layer to be installed later, min requirement is 4 cores)
   - Infra node: 4 CPUs x 8 GB RAM, xvdc: 200GB
   - Compute node 01: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
   - Compute node 02: 4 CPUs x 8 GB RAM, xvdc: 200GB, xvde: 75GB (GlusterFS)
@@ -18,7 +18,7 @@ In my topology:
 
 ## 2. Configure SSH access and key
 
-Since I'm install OCP from my master node, I need to ensure that I can ssh to other nodes using a ssh key
+Since I'm installing OCP from my master node, I need to ensure that I can ssh to other nodes using a ssh key  
 If your nodes don't allow `root` access, you must enable it
 ```shell
 vi /etc/ssh/sshd_config
