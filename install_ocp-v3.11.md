@@ -19,22 +19,24 @@ In my topology:
 ## 2. Configure SSH access and key
 
 Since I'm installing OCP from my master node, I need to ensure that I can ssh to other nodes using a ssh key  
-If your nodes don't allow `root` access, you must enable it
+If your nodes don't allow `root` access, you must enable it  
 ```shell
 vi /etc/ssh/sshd_config
 
 # Set PermitRootLogin to yes
 ```
-- Generate SSH keys if you don't have any
+- Generate SSH keys on the master node if you don't have any
 
 ```shell
+# on master node
 mkdir -p /root/.ssh
 sudo ssh-keygen -b 4096 -t rsa -f /root/.ssh/id_rsa -N ""
 ```
-- Copy SSH public key to other node  
+- Copy SSH public key from to other node  
 ```shell
+# on master node
+#
 export SSH_KEY=$(cat /root/.ssh/id_rsa.pub)
-ssh root@master "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
 ssh root@infra "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
 ssh root@node01 "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
 ssh root@node02 "echo ${SSH_KEY} | tee -a /root/.ssh/authorized_keys"
@@ -170,7 +172,6 @@ glusterfs
 
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
-ansible_ssh_user=root
 openshift_deployment_type=origin
 
 # Set the ports to 8443
@@ -259,5 +260,5 @@ ansible-playbook -i /etc/ansible/hosts /usr/share/ansible/openshift-ansible/play
 ansible-playbook -i /etc/ansible/hosts /usr/share/ansible/openshift-ansible/playbooks/adhoc/uninstall.yml
 
 # make sure the following directories are also deleted in all nodes
-# rm -rf ansible .ansible* .kube/ openshift_bootstrap/ .pki/
+# cd /root;rm -rf ansible .ansible* .kube/ openshift_bootstrap/ .pki/
 ```
